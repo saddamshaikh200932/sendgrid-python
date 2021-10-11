@@ -1,0 +1,46 @@
+SMTP SERVER: SSILSMTP01
+
+try{
+Properties props = new Properties();
+props.put( "mail.smtp.host", csEmailHostName );
+props.put( "mail.smtp.connectiontimeout", "100000");
+props.put( "mail.smtp.timeout", "100000");
+
+Session session = Session.getDefaultInstance( props );
+Message msg = new MimeMessage (session);
+msg.setFrom (new InternetAddress(csEmailReplyAddress, "LPD SDS Stackmap Tool"));
+
+Address[] Recipients = new Address[check.csEmailAddresses.size()] ;
+
+for(int k=0; k<check.csEmailAddresses.size(); k++) {
+Recipients[k] = new InternetAddress(check.csEmailAddresses.get(k));
+}
+
+msg.setRecipients(Message.RecipientType.TO, Recipients);
+
+msg.setSubject (emailSubject);
+
+MimeMultipart multi = new MimeMultipart();
+
+MimeBodyPart htmlPart = new MimeBodyPart();
+htmlPart.setContent("<html><body><font face=\"Courier New\">" + emailMsg +"</font>
+" + "<img src=\"cid:imgPart\"/>
+"+emailMsg2+"</body></html>", "text/html");
+multi.addBodyPart(htmlPart);
+
+MimeBodyPart imgPart=new MimeBodyPart();
+
+DataSource ds=new FileDataSource(sdsPictureXY);
+
+imgPart.setDataHandler(new DataHandler(ds));
+imgPart.setHeader("Content-ID","<imgPart>");
+multi.addBodyPart(imgPart);
+
+msg.setContent(multi);
+
+Transport.send (msg);
+
+}catch (Exception e ) {
+logger.info("Fail to send email: "+e.getMessage());
+e.printStackTrace();
+}
